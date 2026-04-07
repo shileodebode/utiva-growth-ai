@@ -3,20 +3,31 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Utiva Growth AI Dashboard API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: leads
+    description: Lead management
+  - name: enrollments
+    description: Enrollment management
+  - name: workflows
+    description: AI workflow automations
+  - name: analytics
+    description: Growth analytics
+  - name: courses
+    description: Course catalog
+  - name: content
+    description: Content calendar
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +35,352 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /leads:
+    get:
+      operationId: listLeads
+      tags: [leads]
+      summary: List all leads
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [new, contacted, qualified, enrolled, lost]
+        - name: course
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+      responses:
+        "200":
+          description: List of leads
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Lead"
+    post:
+      operationId: createLead
+      tags: [leads]
+      summary: Create a new lead
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateLeadBody"
+      responses:
+        "201":
+          description: Lead created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Lead"
+
+  /leads/{id}:
+    get:
+      operationId: getLead
+      tags: [leads]
+      summary: Get a single lead
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Lead
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Lead"
+    patch:
+      operationId: updateLead
+      tags: [leads]
+      summary: Update a lead
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateLeadBody"
+      responses:
+        "200":
+          description: Updated lead
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Lead"
+
+  /enrollments:
+    get:
+      operationId: listEnrollments
+      tags: [enrollments]
+      summary: List all enrollments
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, active, completed, dropped]
+        - name: course
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of enrollments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Enrollment"
+    post:
+      operationId: createEnrollment
+      tags: [enrollments]
+      summary: Create a new enrollment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateEnrollmentBody"
+      responses:
+        "201":
+          description: Enrollment created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Enrollment"
+
+  /enrollments/{id}:
+    patch:
+      operationId: updateEnrollment
+      tags: [enrollments]
+      summary: Update enrollment
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateEnrollmentBody"
+      responses:
+        "200":
+          description: Updated enrollment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Enrollment"
+
+  /workflows:
+    get:
+      operationId: listWorkflows
+      tags: [workflows]
+      summary: List all AI workflow automations
+      responses:
+        "200":
+          description: List of workflows
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Workflow"
+    post:
+      operationId: createWorkflow
+      tags: [workflows]
+      summary: Create a new workflow automation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateWorkflowBody"
+      responses:
+        "201":
+          description: Workflow created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Workflow"
+
+  /workflows/{id}/toggle:
+    post:
+      operationId: toggleWorkflow
+      tags: [workflows]
+      summary: Enable or disable a workflow
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Updated workflow
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Workflow"
+
+  /workflows/{id}/run:
+    post:
+      operationId: runWorkflow
+      tags: [workflows]
+      summary: Manually trigger an AI workflow run
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Workflow run result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkflowRunResult"
+
+  /analytics/summary:
+    get:
+      operationId: getAnalyticsSummary
+      tags: [analytics]
+      summary: Get growth team dashboard summary
+      responses:
+        "200":
+          description: Analytics summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnalyticsSummary"
+
+  /analytics/conversion-funnel:
+    get:
+      operationId: getConversionFunnel
+      tags: [analytics]
+      summary: Get lead-to-enrollment conversion funnel data
+      responses:
+        "200":
+          description: Funnel data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FunnelStage"
+
+  /analytics/enrollment-trend:
+    get:
+      operationId: getEnrollmentTrend
+      tags: [analytics]
+      summary: Get weekly enrollment trends over time
+      responses:
+        "200":
+          description: Trend data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TrendPoint"
+
+  /courses:
+    get:
+      operationId: listCourses
+      tags: [courses]
+      summary: List all courses
+      responses:
+        "200":
+          description: List of courses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Course"
+
+  /content:
+    get:
+      operationId: listContent
+      tags: [content]
+      summary: List AI-generated content calendar items
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [draft, scheduled, published]
+      responses:
+        "200":
+          description: Content items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ContentItem"
+
+  /content/generate:
+    post:
+      operationId: generateContent
+      tags: [content]
+      summary: Use AI to generate a new content idea
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GenerateContentBody"
+      responses:
+        "201":
+          description: Generated content item
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContentItem"
+
+  /activity:
+    get:
+      operationId: listActivity
+      tags: [analytics]
+      summary: Get recent workflow activity feed
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        "200":
+          description: Activity feed
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ActivityItem"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +391,408 @@ components:
       required:
         - status
 
+    Lead:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        courseInterest:
+          type: string
+        status:
+          type: string
+          enum: [new, contacted, qualified, enrolled, lost]
+        source:
+          type: string
+          enum: [website, referral, social_media, event, paid_ad, organic]
+        notes:
+          type: string
+        aiScore:
+          type: integer
+          description: AI-generated lead quality score (0-100)
+        aiSuggestedAction:
+          type: string
+          description: AI recommendation for next action
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - email
+        - courseInterest
+        - status
+        - source
+        - aiScore
+        - createdAt
+        - updatedAt
+
+    CreateLeadBody:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        courseInterest:
+          type: string
+        source:
+          type: string
+          enum: [website, referral, social_media, event, paid_ad, organic]
+        notes:
+          type: string
+      required:
+        - name
+        - email
+        - courseInterest
+        - source
+
+    UpdateLeadBody:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [new, contacted, qualified, enrolled, lost]
+        notes:
+          type: string
+        courseInterest:
+          type: string
+
+    Enrollment:
+      type: object
+      properties:
+        id:
+          type: integer
+        leadId:
+          type: integer
+        studentName:
+          type: string
+        email:
+          type: string
+        course:
+          type: string
+        cohort:
+          type: string
+        status:
+          type: string
+          enum: [pending, active, completed, dropped]
+        amountPaid:
+          type: number
+        enrolledAt:
+          type: string
+          format: date-time
+        completionRate:
+          type: integer
+        aiEngagementScore:
+          type: integer
+          description: AI-predicted engagement score
+      required:
+        - id
+        - studentName
+        - email
+        - course
+        - cohort
+        - status
+        - amountPaid
+        - enrolledAt
+        - completionRate
+        - aiEngagementScore
+
+    CreateEnrollmentBody:
+      type: object
+      properties:
+        leadId:
+          type: integer
+        studentName:
+          type: string
+        email:
+          type: string
+        course:
+          type: string
+        cohort:
+          type: string
+        amountPaid:
+          type: number
+      required:
+        - studentName
+        - email
+        - course
+        - cohort
+        - amountPaid
+
+    UpdateEnrollmentBody:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [pending, active, completed, dropped]
+        completionRate:
+          type: integer
+
+    Workflow:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        type:
+          type: string
+          enum: [lead_followup, enrollment_reminder, re_engagement, content_push, lead_scoring, drop_alert]
+        isActive:
+          type: boolean
+        triggerCondition:
+          type: string
+        actionTemplate:
+          type: string
+        runsTotal:
+          type: integer
+        runsThisWeek:
+          type: integer
+        successRate:
+          type: number
+        lastRunAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - description
+        - type
+        - isActive
+        - triggerCondition
+        - actionTemplate
+        - runsTotal
+        - runsThisWeek
+        - successRate
+        - createdAt
+
+    CreateWorkflowBody:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        type:
+          type: string
+          enum: [lead_followup, enrollment_reminder, re_engagement, content_push, lead_scoring, drop_alert]
+        triggerCondition:
+          type: string
+        actionTemplate:
+          type: string
+      required:
+        - name
+        - description
+        - type
+        - triggerCondition
+        - actionTemplate
+
+    WorkflowRunResult:
+      type: object
+      properties:
+        workflowId:
+          type: integer
+        affectedCount:
+          type: integer
+        status:
+          type: string
+        message:
+          type: string
+        aiGeneratedMessage:
+          type: string
+          description: Sample AI-generated message produced by the workflow
+      required:
+        - workflowId
+        - affectedCount
+        - status
+        - message
+
+    AnalyticsSummary:
+      type: object
+      properties:
+        totalLeads:
+          type: integer
+        newLeadsThisWeek:
+          type: integer
+        totalEnrollments:
+          type: integer
+        enrollmentsThisWeek:
+          type: integer
+        conversionRate:
+          type: number
+        totalRevenue:
+          type: number
+        revenueThisMonth:
+          type: number
+        activeWorkflows:
+          type: integer
+        workflowRunsThisWeek:
+          type: integer
+        avgAiLeadScore:
+          type: number
+        topPerformingCourse:
+          type: string
+      required:
+        - totalLeads
+        - newLeadsThisWeek
+        - totalEnrollments
+        - enrollmentsThisWeek
+        - conversionRate
+        - totalRevenue
+        - revenueThisMonth
+        - activeWorkflows
+        - workflowRunsThisWeek
+        - avgAiLeadScore
+        - topPerformingCourse
+
+    FunnelStage:
+      type: object
+      properties:
+        stage:
+          type: string
+        count:
+          type: integer
+        percentage:
+          type: number
+      required:
+        - stage
+        - count
+        - percentage
+
+    TrendPoint:
+      type: object
+      properties:
+        week:
+          type: string
+        enrollments:
+          type: integer
+        leads:
+          type: integer
+        revenue:
+          type: number
+      required:
+        - week
+        - enrollments
+        - leads
+        - revenue
+
+    Course:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        category:
+          type: string
+        duration:
+          type: string
+        price:
+          type: number
+        enrollmentCount:
+          type: integer
+        completionRate:
+          type: number
+        rating:
+          type: number
+      required:
+        - id
+        - name
+        - category
+        - duration
+        - price
+        - enrollmentCount
+        - completionRate
+        - rating
+
+    ContentItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        body:
+          type: string
+        type:
+          type: string
+          enum: [email, social_post, whatsapp, blog, ad_copy]
+        targetCourse:
+          type: string
+        targetAudience:
+          type: string
+        status:
+          type: string
+          enum: [draft, scheduled, published]
+        scheduledFor:
+          type: string
+          format: date-time
+        aiGenerated:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - title
+        - body
+        - type
+        - status
+        - aiGenerated
+        - createdAt
+
+    GenerateContentBody:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [email, social_post, whatsapp, blog, ad_copy]
+        targetCourse:
+          type: string
+        targetAudience:
+          type: string
+        tone:
+          type: string
+          enum: [professional, casual, urgent, inspirational]
+      required:
+        - type
+        - targetCourse
+
+    ActivityItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        type:
+          type: string
+          enum: [workflow_run, lead_created, enrollment_created, content_generated, lead_scored]
+        description:
+          type: string
+        workflowName:
+          type: string
+        affectedEntity:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+      required:
+        - id
+        - type
+        - description
+        - timestamp
